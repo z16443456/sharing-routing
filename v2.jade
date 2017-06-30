@@ -1,0 +1,588 @@
+extends layout
+
+block content
+  style.
+    #map {
+      height: 100%;
+      min-height: 600px;
+    }
+    /* Optional: Makes the sample page fill the window. */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .point {
+      width: 80px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 10px;
+      margin: 5px;
+    }
+  div.container
+    div.card.mt-4
+      div.card-block
+        button(class="btn btn-danger" id="btn-reset") 清除
+      div.card-block
+        div.row
+          div.col-12
+            div.form-group
+              label 目前車輛位置
+              input(type="text" class="form-control" id="current_car_address")
+        div.row.routing.routing-a
+          div.col-6
+            div.form-group
+              label A 起點
+              input(type="text" class="form-control" id="a_begin_address")
+          div.col-6
+            div.form-group
+              label A 目的地
+              input(type="text" class="form-control" id="a_destination_address")
+        div.row.routing.routing-b
+          div.col-6
+            div.form-group
+              label B 起點
+              input(type="text" class="form-control" id="b_begin_address")
+          div.col-6
+            div.form-group
+              label B 目的地
+              input(type="text" class="form-control" id="b_destination_address")
+        div.row.routing.routing-c
+          div.col-6
+            div.form-group
+              label C 起點
+              input(type="text" class="form-control" id="c_begin_address")
+          div.col-6
+            div.form-group
+              label C 目的地
+              input(type="text" class="form-control" id="c_destination_address")
+        div.row.routing.routing-d
+          div.col-6
+            div.form-group
+              label D 起點
+              input(type="text" class="form-control" id="d_begin_address")
+          div.col-6
+            div.form-group
+              label D 目的地
+              input(type="text" class="form-control" id="d_destination_address")
+        div.row.routing.routing-e
+          div.col-6
+            div.form-group
+              label E 起點
+              input(type="text" class="form-control" id="e_begin_address")
+          div.col-6
+            div.form-group
+              label E 目的地
+              input(type="text" class="form-control" id="e_destination_address")
+        button(class="btn btn-primary" id="btn-query") 計算共乘路線
+      div.card-block
+        div(id="routes-with-time")
+      div.card-block.map-wrapper
+        
+        div(id="map")
+        div(id="warnings-panel")
+
+  script(src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAyndw6TAw4Rd_OqR_ohnO0Vx--8I-efD8")
+  script.
+    $(function () {
+      $('#btn-query').on('click', function (e) {
+        e.preventDefault()
+        e.stopPropagation()
+        $('.map-wrapper').show()
+        
+        let geocoder = new google.maps.Geocoder()
+        let currentCarAddress = $('#current_car_address').val()
+        let aBeginAddress = $('#a_begin_address').val()
+        let aDestinationAddress = $('#a_destination_address').val()
+        let bBeginAddress = $('#b_begin_address').val()
+        let bDestinationAddress = $('#b_destination_address').val()
+        let cBeginAddress = $('#c_begin_address').val()
+        let cDestinationAddress = $('#c_destination_address').val()
+        let dBeginAddress = $('#d_begin_address').val()
+        let dDestinationAddress = $('#d_destination_address').val()
+        let eBeginAddress = $('#e_begin_address').val()
+        let eDestinationAddress = $('#e_destination_address').val()
+
+        console.log(currentCarAddress)
+        console.log(aBeginAddress, aDestinationAddress)
+        console.log(bBeginAddress, bDestinationAddress)
+        console.log(cBeginAddress, cDestinationAddress)
+        console.log(dBeginAddress, dDestinationAddress)
+        console.log(eBeginAddress, eDestinationAddress)
+        let currentCarLocation,
+          aBeginLocation, aDestinationLocation,
+          bBeginLocation, bDestinationLocation,
+          cBeginLocation, cDestinationLocation,
+          dBeginLocation, dDestinationLocation,
+          eBeginLocation, eDestinationLocation
+        
+        // query car location
+        geocoder.geocode({
+          address: currentCarAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            currentCarLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        // query a location
+        geocoder.geocode({
+          address: aBeginAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            aBeginLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        geocoder.geocode({
+          address: aDestinationAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            aDestinationLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        // query b location
+        geocoder.geocode({
+          address: bBeginAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            bBeginLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        geocoder.geocode({
+          address: bDestinationAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            bDestinationLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        // query c location
+        geocoder.geocode({
+          address: cBeginAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            cBeginLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        geocoder.geocode({
+          address: cDestinationAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            cDestinationLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        // query d location
+        geocoder.geocode({
+          address: dBeginAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            dBeginLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        geocoder.geocode({
+          address: dDestinationAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            dDestinationLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        // query e location
+        geocoder.geocode({
+          address: eBeginAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            eBeginLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        geocoder.geocode({
+          address: eDestinationAddress
+        }, function (results, status) {
+          if (status === 'OK') {
+            eDestinationLocation = results[0].geometry.location
+          } else {
+            console.error('Geocode was not successful for the following reason', status)
+          }
+        })
+        setTimeout(function () {
+          console.log('ccp', `(${currentCarLocation.lat()}, ${currentCarLocation.lng()})`)
+          console.log('a', `(${aBeginLocation.lat()}, ${aBeginLocation.lng()})`, `(${aDestinationLocation.lat()}, ${aDestinationLocation.lng()})`)
+          console.log('b', `(${bBeginLocation.lat()}, ${bBeginLocation.lng()})`, `(${bDestinationLocation.lat()}, ${bDestinationLocation.lng()})`)
+          console.log('c', `(${cBeginLocation.lat()}, ${cBeginLocation.lng()})`, `(${cDestinationLocation.lat()}, ${cDestinationLocation.lng()})`)
+          console.log('d', `(${dBeginLocation.lat()}, ${dBeginLocation.lng()})`, `(${dDestinationLocation.lat()}, ${dDestinationLocation.lng()})`)
+          console.log('e', `(${eBeginLocation.lat()}, ${eBeginLocation.lng()})`, `(${eDestinationLocation.lat()}, ${eDestinationLocation.lng()})`)
+          locate()
+        }, 1000)
+
+        function locate () {
+          let points = [
+            {
+              name: 'a',
+              location: aBeginLocation,
+              type: 'begin',
+              order: 0,
+              base: false,
+              share: false
+            },
+            {
+              name: 'a',
+              location: aDestinationLocation,
+              type: 'destination',
+              order: 0,
+              base: false,
+              share: false
+            },
+            {
+              name: 'b',
+              location: bBeginLocation,
+              type: 'begin',
+              order: 0,
+              base: false,
+              share: false
+            },
+            {
+              name: 'b',
+              location: bDestinationLocation,
+              type: 'destination',
+              order: 0,
+              base: false,
+              share: false
+            },
+            {
+              name: 'c',
+              location: cBeginLocation,
+              type: 'begin',
+              order: 0,
+              base: false,
+              share: false
+            },
+            {
+              name: 'c',
+              location: cDestinationLocation,
+              type: 'destination',
+              order: 0,
+              base: false,
+              share: false
+            },
+            {
+              name: 'd',
+              location: dBeginLocation,
+              type: 'begin',
+              order: 0,
+              base: false,
+              share: false
+            },
+            {
+              name: 'd',
+              location: dDestinationLocation,
+              type: 'destination',
+              order: 0,
+              base: false,
+              share: false
+            },
+            {
+              name: 'e',
+              location: eBeginLocation,
+              type: 'begin',
+              order: 0,
+              base: false,
+              share: false
+            },
+            {
+              name: 'e',
+              location: eDestinationLocation,
+              type: 'destination',
+              order: 0,
+              base: false,
+              share: false
+            }
+          ]
+
+
+          let distances = points.filter(function (p) {
+            return p.type === 'begin'
+          }).map(function (p) {
+            let xAxis = Math.abs(p.location.lat() - currentCarLocation.lat())
+            let yAxis = Math.abs(p.location.lng() - currentCarLocation.lng())
+            return Math.sqrt(xAxis + yAxis)
+          })
+
+          console.log('所有起點和目前車輛位置距離', distances)
+          points.filter(function (p) {
+            return p.type === 'begin'
+          }).forEach(function (p, i) {
+            if (i === distances.indexOf(Math.min(...distances))) {
+              p.base = true
+            }
+          })
+          var baseLineName = points.find(function (p) {
+            return p.base
+          }).name
+          console.log('主線名稱', baseLineName)
+          points.forEach(function (p) {
+            if (p.name === baseLineName) {
+              p.base = true
+            }
+          })
+          let baseBegin = points.find(function (p) {
+            return p.type === 'begin' && p.base
+          })
+          let baseDestination = points.find(function (p) {
+            return p.type === 'destination' && p.base
+          })
+          let baseQuadrant = 0
+          let baseQuadrantX = baseDestination.location.lat() - baseBegin.location.lat()
+          let baseQuadrantY = baseDestination.location.lng() - baseBegin.location.lng()
+          let baseXDirection = baseDestination.location.lat() - baseBegin.location.lat() >= 0 ? '+' : '-'
+          let baseYDirection = baseDestination.location.lng() - baseBegin.location.lng() >= 0 ? '+' : '-'
+          if (baseQuadrantX >= 0 && baseQuadrantY >= 0) {
+            baseQuadrant =  1
+          } else if (baseQuadrantX < 0 && baseQuadrantY >= 0) {
+            baseQuadrant =  2
+          } else if (baseQuadrantX < 0 && baseQuadrantY < 0) {
+            baseQuadrant =  3
+          } else {
+            baseQuadrant = 4
+          }
+
+          console.log('方向為第幾象限', baseQuadrant)
+          points.forEach(function (p) {
+            let x = p.location.lat() - baseBegin.location.lat()
+            let y = p.location.lng() - baseBegin.location.lng()
+            if (x === 0 && y === 0) {
+              return
+            }
+            switch (baseQuadrant) {
+              case 1:
+                p.share = x >= 0 && y >= 0
+                break;
+              case 2:
+                p.share = x < 0 && y >= 0
+                break;
+              case 3:
+                p.share = x < 0 && y < 0
+                break;
+              case 4: 
+                p.share = x >= 0 && y < 0
+                break;
+            }
+          })
+          points.forEach(function (p) {
+            if (!p.share) {
+              points.filter(function (up) {
+                return up.name === p.name
+              }).forEach(function (thp) {
+                thp.share = false
+              })
+            }
+          })
+          let routingNames = points.map(function (p) {
+            if ((p.base || p.share) && p.type === 'begin') {
+              return p.name
+            }
+          }).filter(function (p) {
+            return p != undefined
+          })
+          console.log('所有會計算的路線(包含主線)(未刪除反方向)', routingNames)
+
+          routingNames.forEach(function (r) {
+            let b = points.find(function (p) {
+              return p.type === 'begin' && p.name === r
+            })
+            let d = points.find(function (p) {
+              return p.type === 'destination' && p.name === r
+            })
+
+            let xDirection = d.location.lat() - b.location.lat() >= 0 ? '+' : '-'
+            let yDirection = d.location.lng() - b.location.lng() >= 0 ? '+' : '-'
+            if (baseXDirection !== xDirection && baseYDirection !== yDirection) {
+              b.share = false
+              d.share = false
+            }
+          })
+
+          routingNames = points.map(function (p) {
+            if ((p.base || p.share) && p.type === 'begin') {
+              return p.name
+            }
+          }).filter(function (p) {
+            return p != undefined
+          })
+          console.log('最終計算路線(包含主線)(刪除反方向)', routingNames)
+          
+          // 計算剩餘的所有點和起點的距離
+          let sharePoints = points.filter(function (p) {
+            return p.share
+          })
+          let sharePointsLocations = sharePoints.map(function (p) {
+            return p.location
+          })
+          let dmService = new google.maps.DistanceMatrixService()
+          dmService.getDistanceMatrix({
+            origins: [baseBegin.location],
+            destinations: [...sharePointsLocations, baseDestination.location],
+            travelMode: 'DRIVING',
+            unitSystem: google.maps.UnitSystem.METRIC,
+            avoidHighways: false,
+            avoidTolls: false,
+          }, function (response, status) {
+            console.log('計算距離', response)
+            let baseBeginToEachSharingPointDistances = response.rows[0].elements.map(function (el, index, arr) {
+              if (index == arr.length - 1) {
+                return {
+                  type: 'destination',
+                  name: baseDestination.name,
+                  label: `base begin to begin destination`,
+                  distance: el.distance.value,
+                  location: baseDestination.location
+                }
+              } else {
+                return {
+                  type: sharePoints[index].type,
+                  name: sharePoints[index].name,
+                  label: `base begin to "${sharePoints[index].name}" ${sharePoints[index].type}`,
+                  distance: el.distance.value,
+                  location: sharePoints[index].location
+                }
+              }
+            })
+
+            baseBeginToEachSharingPointDistances.sort(function (a, b) {
+              if (a.distance > b.distance) {
+                return 1
+              } else if (a.distance < b.distance) {
+                return -1
+              } else {
+                return 0
+              }
+            })
+            console.log('排序其他點和起點的距離', baseBeginToEachSharingPointDistances)
+            let locations = [baseBegin.location]
+            let markers = [{
+              name: baseBegin.name + (baseBegin.type === 'begin' ? '起點' : '目的地'),
+              location: baseBegin.location
+            }]
+            baseBeginToEachSharingPointDistances.forEach(function (d) {
+              locations.push(d.location)
+              markers.push({
+                name: d.name + (d.type === 'begin' ? '起點' : '目的地'),
+                location: d.location
+              })
+            })
+            initialize(baseBegin.location)
+            calcRoute(locations, markers)
+            console.log(markers)
+            console.log('各地點座標', locations)
+            $(`.routing`).removeClass('bg-info')
+            routingNames.forEach(function (name) {
+              $(`.routing-${name}`).addClass('bg-info')
+            })
+          })
+
+        }
+      })
+
+  
+    let map, markerArray = []
+        directionsDisplay = new google.maps.DirectionsRenderer()
+    let directionsService = new google.maps.DirectionsService()
+    let stepDisplay = new vs
+
+    function initialize (center) {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: center,
+        zoom: 7
+      })
+      directionsDisplay.setMap(map)
+    }
+
+    function calcRoute (locations, markers) {
+      let waypoints = locations.slice(1, -1).map(function (location) {
+        return {
+          location: location,
+          stopover: true
+        }
+      })
+      let starts = locations.slice(0, -1)
+      let ends = locations.slice(1)
+      let dm = new google.maps.DistanceMatrixService()
+      dm.getDistanceMatrix({
+        origins: starts,
+        destinations: ends,
+        travelMode: 'DRIVING',
+        unitSystem: google.maps.UnitSystem.METRIC,
+        avoidHighways: false,
+        avoidTolls: false,
+      }, function (response, status) {
+        console.log('每個節點的時間', response, markers)
+        let times = response.rows[0].elements
+        $('#routes-with-time').empty()
+        for (var i = 0; i < times.length; i++) {
+          let p = document.createElement('span')
+          p.classList.add('point')
+          p.innerHTML = markers[i].name
+          let d = document.createElement('span')
+          d.classList.add('time')
+          d.innerHTML = times[i].duration.text
+
+          $('#routes-with-time').append(p)
+          $('#routes-with-time').append(d)
+        }
+        let lp = document.createElement('span')
+        lp.classList.add('point')
+        lp.innerHTML = markers[markers.length - 1].name
+        $('#routes-with-time').append(lp)
+      })
+
+      console.log('waypoints', waypoints)
+      let request = {
+        origin: locations[0],
+        destination: locations[locations.length - 1],
+        waypoints: waypoints,
+        provideRouteAlternatives: false,
+        travelMode: 'DRIVING',
+        drivingOptions: {
+          departureTime: new Date(),
+          trafficModel: 'pessimistic'
+        },
+        unitSystem: google.maps.UnitSystem.METRIC
+      }
+
+
+      directionsService.route(request, function(result, status) {
+        console.log('路線結果', result)
+        if (status == 'OK') {
+          directionsDisplay.setDirections(result)
+          markerArray.forEach(function (m) {
+            m.setMap(null)
+          })
+          //- markers.forEach(function (m, i) {
+          //-   let marker = markerArray[i] = markerArray[i] || new google.maps.Marker
+          //-   marker.setMap(map);
+          //-   marker.setPosition(m.location)
+          //-   google.maps.event.addListener(marker, 'click', function() {
+          //-     stepDisplay.setContent(m.name);
+          //-     stepDisplay.open(map, marker);
+          //-   })
+          //- })
+        }
+      })
+    }
+  
